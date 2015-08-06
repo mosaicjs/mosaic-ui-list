@@ -8,9 +8,19 @@ module.exports = {
     module : {
         loaders : [ {
             test : /\.jsx?$/,
-            exclude : /node_modules/,
-            loader : 'babel-loader'
+//            exclude : [ /node_modules/ ],
+            include : [ /node_modules\/mosaic\-/, __dirname + '/index.js', __dirname + '/lib' ],
+            loader : 'babel'
+        }, {
+            test : /\.less|\.css/,
+            loader : "style-loader!css-loader!less-loader"
+        }, {
+            test : /\.html$/,
+            loader : "html-loader"
+        }, {
+            test : /\.(png|jpg|svg|woff2?|eot|ttf)$/,
+            loader : 'url-loader?limit=8000'
         } ]
     },
-    externals : [ 'react', 'promise' ]
+    externals : [ 'react', 'promise', 'mosaic-ui' ]
 };

@@ -1,13 +1,13 @@
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
-		module.exports = factory(require("react"), require("promise"));
+		module.exports = factory(require("react"), require("promise"), require("mosaic-ui"));
 	else if(typeof define === 'function' && define.amd)
-		define(["react", "promise"], factory);
+		define(["react", "promise", "mosaic-ui"], factory);
 	else {
-		var a = typeof exports === 'object' ? factory(require("react"), require("promise")) : factory(root["react"], root["promise"]);
+		var a = typeof exports === 'object' ? factory(require("react"), require("promise"), require("mosaic-ui")) : factory(root["react"], root["promise"], root["mosaic-ui"]);
 		for(var i in a) (typeof exports === 'object' ? exports : root)[i] = a[i];
 	}
-})(this, function(__WEBPACK_EXTERNAL_MODULE_2__, __WEBPACK_EXTERNAL_MODULE_3__) {
+})(this, function(__WEBPACK_EXTERNAL_MODULE_2__, __WEBPACK_EXTERNAL_MODULE_3__, __WEBPACK_EXTERNAL_MODULE_4__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -66,18 +66,23 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _libListItemView2 = _interopRequireDefault(_libListItemView);
 
-	var _libListView = __webpack_require__(9);
+	var _libListView = __webpack_require__(5);
 
 	var _libListView2 = _interopRequireDefault(_libListView);
 
-	var _libListPaginationView = __webpack_require__(10);
+	var _libListPaginationView = __webpack_require__(6);
 
 	var _libListPaginationView2 = _interopRequireDefault(_libListPaginationView);
+
+	var _libListSizeView = __webpack_require__(7);
+
+	var _libListSizeView2 = _interopRequireDefault(_libListSizeView);
 
 	exports['default'] = {
 	    ListItemView: _libListItemView2['default'],
 	    ListView: _libListView2['default'],
-	    ListPaginationView: _libListPaginationView2['default']
+	    ListPaginationView: _libListPaginationView2['default'],
+	    ListSizeView: _libListSizeView2['default']
 	};
 	module.exports = exports['default'];
 
@@ -132,23 +137,51 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var r = this.object;
 	            return r.get('properties.description');
 	        }
+
+	        // --------------------------------------------
 	    }, {
 	        key: 'setOpen',
 	        value: function setOpen(open) {
-	            var openItems = this.openItems;
-	            if (!openItems) return _promise2['default'].resolve();
-	            var resource = this.object;
-	            if (open) {
-	                return openItems.add(resource);
-	            } else {
-	                var pos = openItems.pos(resource);
-	                return openItems.remove(pos);
-	            }
+	            return this._setIn(this.openItems, open);
 	        }
+	    }, {
+	        key: 'setSelected',
+	        value: function setSelected(selected) {
+	            return this._setIn(this.selectedItems, selected);
+	        }
+
+	        // --------------------------------------------
 	    }, {
 	        key: 'renderView',
 	        value: function renderView() {
-	            return _react2['default'].createElement(ListItemLayout, { key: this.object.id, view: this });
+	            var key = this.object.id;
+	            var Layout = this.Layout;
+	            return _react2['default'].createElement(Layout, { key: this.object.id, view: this });
+	        }
+
+	        // --------------------------------------------
+	    }, {
+	        key: '_setIn',
+	        value: function _setIn(set, add) {
+	            if (!set) return _promise2['default'].resolve();
+	            var resource = this.object;
+	            if (add) {
+	                return set.add(resource);
+	            } else {
+	                var pos = set.pos(resource);
+	                return set.remove(pos);
+	            }
+	        }
+	    }, {
+	        key: '_isIn',
+	        value: function _isIn(dataSet) {
+	            if (!dataSet) return false;
+	            return dataSet.has(this.object);
+	        }
+	    }, {
+	        key: 'Layout',
+	        get: function get() {
+	            return this.constructor.Layout;
 	        }
 	    }, {
 	        key: 'openItems',
@@ -158,9 +191,25 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: 'isOpen',
 	        get: function get() {
-	            var dataSet = this.openItems;
-	            if (!dataSet) return false;
-	            return dataSet.has(this.object);
+	            return this._isIn(this.openItems);
+	        }
+
+	        // --------------------------------------------
+	    }, {
+	        key: 'selectedItems',
+	        get: function get() {
+	            return this.options.selectedItems;
+	        }
+	    }, {
+	        key: 'isSelectable',
+	        get: function get() {
+	            var dataSet = this.selectedItems;
+	            return !!dataSet;
+	        }
+	    }, {
+	        key: 'isSelected',
+	        get: function get() {
+	            return this._isIn(this.selectedItems);
 	        }
 	    }]);
 
@@ -169,8 +218,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	exports['default'] = ListItemView;
 
-	var ListItemLayout = (function (_React$Component) {
-	    _inherits(ListItemLayout, _React$Component);
+	var ListItemLayout = (function (_ViewLayout) {
+	    _inherits(ListItemLayout, _ViewLayout);
 
 	    function ListItemLayout() {
 	        _classCallCheck(this, ListItemLayout);
@@ -180,30 +229,33 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 
 	        _get(Object.getPrototypeOf(ListItemLayout.prototype), 'constructor', this).apply(this, params);
-	        this._onClick = this._onClick.bind(this);
-	        this.state = this._newState();
+	        this._toggleOpen = this._toggleOpen.bind(this);
+	        this._toggleSelection = this._toggleSelection.bind(this);
+	        this.state = this._newState({
+	            open: this.props.view.isOpen,
+	            selected: this.props.view.isSelected
+	        });
 	    }
 
 	    _createClass(ListItemLayout, [{
-	        key: 'componentWillMount',
-	        value: function componentWillMount() {
-	            this.setState(this._newState({ open: this.props.view.isOpen }));
-	        }
-	    }, {
 	        key: 'componentWillReceiveProps',
 	        value: function componentWillReceiveProps(props) {
-	            this.setState(this._newState({ open: props.view.isOpen }));
+	            this._updateState({
+	                open: props.view.isOpen,
+	                selected: props.view.isSelected
+	            });
 	        }
 	    }, {
-	        key: '_newState',
-	        value: function _newState(state) {
-	            return _mosaicUi.View.extend({}, this.state, state);
+	        key: '_toggleOpen',
+	        value: function _toggleOpen(ev) {
+	            this.props.view.setOpen(!this.state.open);
+	            ev.preventDefault();
+	            ev.stopPropagation();
 	        }
 	    }, {
-	        key: '_onClick',
-	        value: function _onClick(ev) {
-	            var view = this.props.view;
-	            view.setOpen(!this.state.open);
+	        key: '_toggleSelection',
+	        value: function _toggleSelection(ev) {
+	            this.props.view.setSelected(!this.state.selected);
 	            ev.preventDefault();
 	            ev.stopPropagation();
 	        }
@@ -211,30 +263,79 @@ return /******/ (function(modules) { // webpackBootstrap
 	        key: 'render',
 	        value: function render() {
 	            var view = this.props.view;
+	            var className = view.className || 'panel panel-default';
+	            var content = undefined;
+	            if (this.state.open) {
+	                className += ' selected';
+	                content = view._renderContent();
+	            }
+	            if (content) {
+	                content = _react2['default'].createElement(
+	                    'div',
+	                    { className: 'panel-body' },
+	                    content
+	                );
+	            }
+	            return _react2['default'].createElement(
+	                'div',
+	                { key: this.props.id, className: className },
+	                _react2['default'].createElement(
+	                    'div',
+	                    { className: 'panel-heading', onClick: this._toggleOpen },
+	                    this._renderCheckbox(),
+	                    this._renderTitle()
+	                ),
+	                this._renderContent()
+	            );
+	        }
+	    }, {
+	        key: '_renderTitle',
+	        value: function _renderTitle() {
+	            var view = this.props.view;
+	            return _react2['default'].createElement(
+	                'a',
+	                { href: '#', onClick: this._toggleOpen },
+	                view._renderTitle()
+	            );
+	        }
+	    }, {
+	        key: '_renderCheckbox',
+	        value: function _renderCheckbox() {
+	            var view = this.props.view;
+	            var checkbox = undefined;
+	            if (view.isSelectable) {
+	                var checkboxClassName = view.isSelected ? "glyphicon glyphicon-check" : "glyphicon glyphicon-unchecked";
+	                checkbox = _react2['default'].createElement(
+	                    'a',
+	                    { href: '#', className: 'btn', onClick: this._toggleSelection },
+	                    _react2['default'].createElement('i', { className: checkboxClassName })
+	                );
+	            }
+	            return checkbox;
+	        }
+	    }, {
+	        key: '_renderContent',
+	        value: function _renderContent() {
+	            var view = this.props.view;
 	            var content = undefined;
 	            if (this.state.open) {
 	                content = view._renderContent();
 	            }
-	            return _react2['default'].createElement(
-	                'div',
-	                { key: this.props.id, className: view.className, style: view.style },
-	                _react2['default'].createElement(
-	                    'h3',
-	                    null,
-	                    _react2['default'].createElement(
-	                        'a',
-	                        { href: "#", onClick: this._onClick },
-	                        view._renderTitle()
-	                    )
-	                ),
-	                content
-	            );
+	            if (content) {
+	                content = _react2['default'].createElement(
+	                    'div',
+	                    { className: 'panel-body' },
+	                    content
+	                );
+	            }
+	            return content;
 	        }
 	    }]);
 
 	    return ListItemLayout;
-	})(_react2['default'].Component);
+	})(_mosaicUi.ViewLayout);
 
+	ListItemView.Layout = ListItemLayout;
 	module.exports = exports['default'];
 
 /***/ },
@@ -251,293 +352,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 4 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ function(module, exports) {
 
-	'use strict';
-
-	Object.defineProperty(exports, '__esModule', {
-	    value: true
-	});
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _libDataSetLayout = __webpack_require__(5);
-
-	var _libDataSetLayout2 = _interopRequireDefault(_libDataSetLayout);
-
-	var _libUtils = __webpack_require__(7);
-
-	var _libUtils2 = _interopRequireDefault(_libUtils);
-
-	var _libView = __webpack_require__(8);
-
-	var _libView2 = _interopRequireDefault(_libView);
-
-	var _libViewLayout = __webpack_require__(6);
-
-	var _libViewLayout2 = _interopRequireDefault(_libViewLayout);
-
-	exports['default'] = {
-	    DataSetLayout: _libDataSetLayout2['default'],
-	    Utils: _libUtils2['default'],
-	    View: _libView2['default'],
-	    ViewLayout: _libViewLayout2['default']
-	};
-	module.exports = exports['default'];
+	module.exports = __WEBPACK_EXTERNAL_MODULE_4__;
 
 /***/ },
 /* 5 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	Object.defineProperty(exports, '__esModule', {
-	    value: true
-	});
-
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-	var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
-
-	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-	var _react = __webpack_require__(2);
-
-	var _react2 = _interopRequireDefault(_react);
-
-	var _ViewLayout2 = __webpack_require__(6);
-
-	var _ViewLayout3 = _interopRequireDefault(_ViewLayout2);
-
-	var _Utils = __webpack_require__(7);
-
-	var _Utils2 = _interopRequireDefault(_Utils);
-
-	var DataSetLayout = (function (_ViewLayout) {
-	    _inherits(DataSetLayout, _ViewLayout);
-
-	    function DataSetLayout() {
-	        _classCallCheck(this, DataSetLayout);
-
-	        for (var _len = arguments.length, params = Array(_len), _key = 0; _key < _len; _key++) {
-	            params[_key] = arguments[_key];
-	        }
-
-	        _get(Object.getPrototypeOf(DataSetLayout.prototype), 'constructor', this).apply(this, params);
-	        this._reload = _Utils2['default'].debounce(this._reload.bind(this), 100);
-	        this._onSetUpdates = this._onSetUpdates.bind(this);
-	    }
-
-	    _createClass(DataSetLayout, [{
-	        key: '_triggerListeners',
-	        value: function _triggerListeners(method) {
-	            var dependencies = this.props.dependencies || [];
-	            dependencies.forEach(function (set) {
-	                if (set) {
-	                    set[method]('update', this._onSetUpdates);
-	                }
-	            }, this);
-	        }
-	    }, {
-	        key: 'componentWillMount',
-	        value: function componentWillMount() {
-	            this._triggerListeners('addListener');
-	        }
-	    }, {
-	        key: 'componentWillUnmount',
-	        value: function componentWillUnmount() {
-	            this._triggerListeners('removeListener');
-	        }
-	    }, {
-	        key: '_onSetUpdates',
-	        value: function _onSetUpdates(intent) {
-	            intent.then((function () {
-	                this._reload();
-	            }).bind(this));
-	        }
-	    }, {
-	        key: '_reload',
-	        value: function _reload() {
-	            this._updateState();
-	        }
-	    }]);
-
-	    return DataSetLayout;
-	})(_ViewLayout3['default']);
-
-	exports['default'] = DataSetLayout;
-	module.exports = exports['default'];
-
-/***/ },
-/* 6 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	Object.defineProperty(exports, '__esModule', {
-	    value: true
-	});
-
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-	var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
-
-	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-	var _react = __webpack_require__(2);
-
-	var _react2 = _interopRequireDefault(_react);
-
-	var _Utils = __webpack_require__(7);
-
-	var _Utils2 = _interopRequireDefault(_Utils);
-
-	var ViewLayout = (function (_React$Component) {
-	    _inherits(ViewLayout, _React$Component);
-
-	    function ViewLayout() {
-	        _classCallCheck(this, ViewLayout);
-
-	        for (var _len = arguments.length, params = Array(_len), _key = 0; _key < _len; _key++) {
-	            params[_key] = arguments[_key];
-	        }
-
-	        _get(Object.getPrototypeOf(ViewLayout.prototype), 'constructor', this).apply(this, params);
-	        this.state = this._newState();
-	    }
-
-	    _createClass(ViewLayout, [{
-	        key: '_newState',
-	        value: function _newState() {
-	            for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
-	                args[_key2] = arguments[_key2];
-	            }
-
-	            return _Utils2['default'].extend.apply(_Utils2['default'], [{}, this.state].concat(args));
-	        }
-	    }, {
-	        key: '_updateState',
-	        value: function _updateState() {
-	            this.setState(this._newState.apply(this, arguments));
-	        }
-	    }]);
-
-	    return ViewLayout;
-	})(_react2['default'].Component);
-
-	exports['default'] = ViewLayout;
-	module.exports = exports['default'];
-
-/***/ },
-/* 7 */
-/***/ function(module, exports) {
-
-	"use strict";
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	var Utils = (function () {
-	    function Utils() {
-	        _classCallCheck(this, Utils);
-	    }
-
-	    _createClass(Utils, null, [{
-	        key: "extend",
-	        value: function extend() {
-	            var result = {};
-
-	            for (var _len = arguments.length, params = Array(_len), _key = 0; _key < _len; _key++) {
-	                params[_key] = arguments[_key];
-	            }
-
-	            params.forEach(function (param) {
-	                if (!param) return;
-	                for (var key in param) {
-	                    if (param.hasOwnProperty(key)) {
-	                        result[key] = param[key];
-	                    }
-	                }
-	            });
-	            return result;
-	        }
-	    }, {
-	        key: "debounce",
-	        value: function debounce(method, timeout) {
-	            var timerId = undefined;
-	            function clear() {
-	                if (!timerId) return;
-	                clearTimeout(timerId);
-	                timerId = undefined;
-	            }
-	            return function () {
-	                for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
-	                    args[_key2] = arguments[_key2];
-	                }
-
-	                var that = this;
-	                clear();
-	                timerId = setTimeout(function () {
-	                    clear();
-	                    method.apply(that, args);
-	                }, timeout);
-	            };
-	        }
-	    }]);
-
-	    return Utils;
-	})();
-
-	exports["default"] = Utils;
-	module.exports = exports["default"];
-
-/***/ },
-/* 8 */
-/***/ function(module, exports) {
-
-	'use strict';
-
-	Object.defineProperty(exports, '__esModule', {
-	    value: true
-	});
-
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
-
-	var View = (function () {
-	    function View() {
-	        _classCallCheck(this, View);
-	    }
-
-	    _createClass(View, [{
-	        key: 'renderView',
-	        value: function renderView() {
-	            throw new Error('Not implemented');
-	        }
-	    }]);
-
-	    return View;
-	})();
-
-	exports['default'] = View;
-	module.exports = exports['default'];
-
-/***/ },
-/* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -627,12 +447,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	                return result;
 	            }).bind(this));
 	            var listView = list;
+	            var view = this.props.view;
 	            if (!list.length) {
-	                listView = this.props.view._renderEmptyList();
+	                listView = view._renderEmptyList();
 	            }
+	            var className = view.className || 'panels';
 	            return _react2['default'].createElement(
 	                'div',
-	                { className: this.className, style: this.style },
+	                { className: className, style: this.style },
 	                listView
 	            );
 	        }
@@ -644,7 +466,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports['default'];
 
 /***/ },
-/* 10 */
+/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -711,24 +533,24 @@ return /******/ (function(modules) { // webpackBootstrap
 	                        'span',
 	                        null,
 	                        ' ',
-	                        _react2['default'].createElement('i', { className: "glyphicon glyphicon-step-backward" })
+	                        _react2['default'].createElement('i', { className: 'glyphicon glyphicon-step-backward' })
 	                    ),
 	                    prev: _react2['default'].createElement(
 	                        'span',
 	                        null,
-	                        _react2['default'].createElement('i', { className: "glyphicon glyphicon-chevron-left" }),
+	                        _react2['default'].createElement('i', { className: 'glyphicon glyphicon-chevron-left' }),
 	                        '…'
 	                    ),
 	                    next: _react2['default'].createElement(
 	                        'span',
 	                        null,
 	                        '…',
-	                        _react2['default'].createElement('i', { className: "glyphicon glyphicon-chevron-right" })
+	                        _react2['default'].createElement('i', { className: 'glyphicon glyphicon-chevron-right' })
 	                    ),
 	                    last: _react2['default'].createElement(
 	                        'span',
 	                        null,
-	                        _react2['default'].createElement('i', { className: "glyphicon glyphicon-step-forward" }),
+	                        _react2['default'].createElement('i', { className: 'glyphicon glyphicon-step-forward' }),
 	                        ' '
 	                    )
 	                };
@@ -755,7 +577,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                { key: key, className: className },
 	                _react2['default'].createElement(
 	                    'a',
-	                    { href: "#", onClick: this._setPage.bind(this, index) },
+	                    { href: '#', onClick: this._setPage.bind(this, index) },
 	                    label
 	                )
 	            );
@@ -811,6 +633,87 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }]);
 
 	    return ListPaginationLayout;
+	})(_mosaicUi.DataSetLayout);
+
+	module.exports = exports['default'];
+
+/***/ },
+/* 7 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, '__esModule', {
+	    value: true
+	});
+
+	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+	var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var _react = __webpack_require__(2);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	var _mosaicUi = __webpack_require__(4);
+
+	var ListSizeView = (function (_View) {
+	    _inherits(ListSizeView, _View);
+
+	    function ListSizeView() {
+	        _classCallCheck(this, ListSizeView);
+
+	        _get(Object.getPrototypeOf(ListSizeView.prototype), 'constructor', this).apply(this, arguments);
+	    }
+
+	    _createClass(ListSizeView, [{
+	        key: 'renderView',
+	        value: function renderView(options) {
+	            options = options || {};
+	            return _react2['default'].createElement(ListSizeLayout, _extends({
+	                view: this,
+	                dataSet: this.options.dataSet,
+	                dependencies: this.options.dependencies || []
+	            }, options));
+	        }
+	    }]);
+
+	    return ListSizeView;
+	})(_mosaicUi.View);
+
+	exports['default'] = ListSizeView;
+
+	var ListSizeLayout = (function (_DataSetLayout) {
+	    _inherits(ListSizeLayout, _DataSetLayout);
+
+	    function ListSizeLayout() {
+	        _classCallCheck(this, ListSizeLayout);
+
+	        _get(Object.getPrototypeOf(ListSizeLayout.prototype), 'constructor', this).apply(this, arguments);
+	    }
+
+	    _createClass(ListSizeLayout, [{
+	        key: 'render',
+	        value: function render() {
+	            var dataSet = this.props.dataSet;
+	            var className = this.props.className || "badge";
+	            return _react2['default'].createElement(
+	                'span',
+	                { className: className },
+	                dataSet.size()
+	            );
+	        }
+	    }]);
+
+	    return ListSizeLayout;
 	})(_mosaicUi.DataSetLayout);
 
 	module.exports = exports['default'];

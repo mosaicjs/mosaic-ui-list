@@ -1,7 +1,7 @@
 {
   "name": "mosaic-ui-list",
   "version": "0.0.0",
-  "description": "Message internationalization (uiList)",
+  "description": "UI elements for lists visualization",
   "main": "index.js",
   "scripts": {
     "test": "mocha -R spec ./test/index.js",
@@ -14,8 +14,7 @@
     "url": "https://github.com/mosaicjs/mosaic-ui-list"
   },
   "keywords": [
-    "uiList",
-    "internationalization"
+    "list visualisation"
   ],
   "author": "Mikhail Kotelnikov <mikhail.kotelnikov@ubimix.com>",
   "license": "MIT",
@@ -23,7 +22,7 @@
     "url": "https://github.com/mosaicjs/mosaic-ui-list/issues"
   },
   "devDependencies": {
-    "babel-core": "^5.8.3",
+    "babel-core": "^5.8.21",
     "babel-loader": "^5.3.2",
     "css-loader": "^0.15.6",
     "expect.js": "^0.3.1",
@@ -37,6 +36,7 @@
     "webpack": "^1.10.1"
   },
   "dependencies": {
+    "mosaic-ui": "^0.1.0",
     "promise": "^7.0.3",
     "react": "^0.13.3"
   }
