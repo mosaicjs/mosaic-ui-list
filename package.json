@@ -1,6 +1,6 @@
 {
   "name": "mosaic-ui-list",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "UI elements for lists visualization",
   "main": "index.js",
   "scripts": {
