@@ -140,9 +140,14 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        // --------------------------------------------
 	    }, {
+	        key: '_toggleOpen',
+	        value: function _toggleOpen() {
+	            this._setIn(this.openItems, !this.isOpen, true);
+	        }
+	    }, {
 	        key: 'setOpen',
 	        value: function setOpen(open) {
-	            return this._setIn(this.openItems, open);
+	            return this._setIn(this.openItems, open, true);
 	        }
 	    }, {
 	        key: 'setSelected',
@@ -162,11 +167,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	        // --------------------------------------------
 	    }, {
 	        key: '_setIn',
-	        value: function _setIn(set, add) {
+	        value: function _setIn(set, add, exclusive) {
 	            if (!set) return _promise2['default'].resolve();
 	            var resource = this.object;
 	            if (add) {
-	                return set.add(resource);
+	                if (exclusive) {
+	                    return set.setItems([resource]);
+	                } else {
+	                    return set.add(resource);
+	                }
 	            } else {
 	                var pos = set.pos(resource);
 	                return set.remove(pos);
@@ -248,7 +257,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: '_toggleOpen',
 	        value: function _toggleOpen(ev) {
-	            this.props.view.setOpen(!this.state.open);
+	            this.props.view._toggleOpen();
 	            ev.preventDefault();
 	            ev.stopPropagation();
 	        }
@@ -281,7 +290,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                { key: this.props.id, className: className },
 	                _react2['default'].createElement(
 	                    'div',
-	                    { className: 'panel-heading', onClick: this._toggleOpen },
+	                    { className: 'panel-heading' },
 	                    this._renderCheckbox(),
 	                    this._renderTitle()
 	                ),
