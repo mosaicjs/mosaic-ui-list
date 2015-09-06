@@ -418,6 +418,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return _react2['default'].createElement(ListLayout, {
 	                view: this,
 	                dataSet: this.options.dataSet,
+	                openItems: this.options.openItems,
 	                dependencies: this.options.dependencies || [],
 	                itemViewType: itemViewType,
 	                itemOptions: this.options });
@@ -446,13 +447,41 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 
 	    _createClass(ListLayout, [{
+	        key: 'componentDidMount',
+	        value: function componentDidMount() {
+	            _get(Object.getPrototypeOf(ListLayout.prototype), 'componentDidMount', this).call(this);
+	            this._scrollToOpenItem();
+	        }
+	    }, {
+	        key: 'componentDidUpdate',
+	        value: function componentDidUpdate() {
+	            this._scrollToOpenItem();
+	        }
+	    }, {
+	        key: '_scrollToOpenItem',
+	        value: function _scrollToOpenItem() {
+	            if (this.openItemPos !== undefined) {
+	                var container = _react2['default'].findDOMNode(this);
+	                var elm = container.children[this.openItemPos];
+	                if (typeof elm.scrollIntoView === 'function') {
+	                    elm.scrollIntoView(true);
+	                }
+	            }
+	        }
+	    }, {
 	        key: 'render',
 	        value: function render() {
 	            var dataSet = this.props.dataSet;
+	            var openItems = this.props.openItems;
 	            var ListItemView = this.props.itemViewType;
-	            var list = dataSet.map((function (r) {
+	            var that = this;
+	            delete that.openItemPos;
+	            var list = dataSet.map((function (r, pos) {
 	                var itemView = r.newAdapter(ListItemView, this.props.itemOptions);
 	                var result = itemView.renderView();
+	                if (openItems && that.openItemPos === undefined && openItems.has(r)) {
+	                    that.openItemPos = pos;
+	                }
 	                return result;
 	            }).bind(this));
 	            var listView = list;
