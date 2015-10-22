@@ -36,8 +36,9 @@
     "webpack": "^1.10.1"
   },
   "dependencies": {
-    "mosaic-ui": "^0.1.0",
+    "mosaic-ui": "^0.1.2",
     "promise": "^7.0.3",
-    "react": "^0.13.3"
+    "react": "^0.14.0",
+    "react-dom": "^0.14.0"
   }
 }
