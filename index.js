@@ -1,13 +1,11 @@
-import ListItemView from './lib/ListItemView';
-import ListView from './lib/ListView';
+import List from './lib/List';
+import ListItem from './lib/ListItem';
 import ListPagination from './lib/ListPagination';
-import ListPaginationView from './lib/ListPaginationView';
-import ListSizeView from './lib/ListSizeView';
+import ListSize from './lib/ListSize';
 
 export default {
-    ListItemView,
-    ListView,
+    List,
+    ListItem,
     ListPagination,
-    ListPaginationView,
-    ListSizeView
+    ListSize
 }
